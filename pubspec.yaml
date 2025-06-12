@@ -1,0 +1,49 @@
+name: ntigradproject
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.8.0+1  # ✅ الاحتفاظ بأحدث إصدار فقط
+  cupertino_icons: ^1.0.8
+  introduction_screen: ^3.1.17
+  dots_indicator: ^4.0.1
+  flutter_svg: ^2.0.9  # ✅ إضافة إصدار محدد لتجنب الأخطاء
+  carousel_slider: ^5.0.0
+  item_count_number_button: ^1.9.2
+  get: ^4.6.6  # ✅ إضافة إصدار محدد
+  shared_preferences: ^2.2.0  # ✅ إضافة إصدار محدد
+  flutter_bloc: ^9.1.0
+  image_picker: ^1.1.2
+  dartz: ^0.10.1
+  givestarreviews: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat/Montserrat-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Montserrat/Montserrat-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Montserrat/Montserrat-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Montserrat/Montserrat-Bold.ttf
+          weight: 700
