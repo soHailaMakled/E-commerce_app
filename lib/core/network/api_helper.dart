@@ -1,63 +1,88 @@
 import 'package:dio/dio.dart';
-import '../local/local_data.dart';
-import 'api_response.dart';
-import 'end_points.dart';
+import 'package:ntigradproject/core/network/api_response.dart';
+import 'package:ntigradproject/core/network/api_configration.dart';
+import 'package:ntigradproject/core/network/api_endpoint.dart'; // ✅ تأكد من هذا الـ import فقط لـ ApiEndpoint
+// تأكدي من عدم وجود أي تعريف آخر لـ ApiEndpoint هنا في هذا الملف
 
 class APIHelper {
-  static final APIHelper _apiHelper = APIHelper._internal();
-  factory APIHelper() => _apiHelper;
+  static final APIHelper _instance = APIHelper._internal();
+  factory APIHelper() => _instance;
   APIHelper._internal();
 
-  Dio dio = Dio(BaseOptions(
-    baseUrl: ApiEndpoint.baseUrl,
-    connectTimeout: Duration(seconds: 10),
-    sendTimeout: Duration(seconds: 10),
-    receiveTimeout: Duration(seconds: 10),
-  ));
+  final Dio _dio = ApiConfigration.dioClient;
 
-  // دالة login المعدلة لإرسال بيانات تسجيل الدخول كـ form-data مع إرسال كلا المفتاحين username و email
   Future<ApiResponse> login({required String username, required String password}) async {
     try {
-      // تحويل البيانات إلى form-data، نرسل قيمة username في المفتاحين "username" و "email"
-      FormData formData = FormData.fromMap({
+      final FormData formData = FormData.fromMap({
         "username": username,
-        "email": username, // إرسال نفس القيمة تحت مفتاح email
+        "email": username,
         "password": password,
       });
-      var response = await dio.post(
-        EndPoints.login,
+
+      final response = await _dio.post(
+        ApiEndpoint.login, // استخدام ApiEndpoint من الـ import
         data: formData,
-        options: Options(contentType: Headers.multipartFormDataContentType),
       );
       return ApiResponse.fromResponse(response);
+    } on DioException catch (e) {
+      return ApiResponse.fromError(e);
     } catch (error) {
       return ApiResponse.fromError(error);
     }
   }
 
-  // دالة postRequest العامة لاستخدامها في طلبات أخرى
-  Future<ApiResponse> postRequest({
+  Future<ApiResponse> request({
+    required String method,
     required String endPoint,
-    required Map<String, dynamic> data,
-    bool isAuthorized = true,
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
     bool isFormData = false,
   }) async {
     try {
       dynamic finalData = data;
-      if (isFormData) {
+      if (isFormData && data != null) {
         finalData = FormData.fromMap(data);
       }
-      var response = await dio.post(
-        endPoint,
-        data: finalData,
-        options: Options(headers: {
-          if (isAuthorized && LocalData.accessToken != null)
-            "Authorization": "Bearer ${LocalData.accessToken ?? ''}"
-        }),
-      );
+
+      Response response;
+      switch (method.toUpperCase()) {
+        case 'GET':
+          response = await _dio.get(endPoint, queryParameters: queryParameters);
+          break;
+        case 'POST':
+          response = await _dio.post(endPoint, data: finalData);
+          break;
+        case 'PUT':
+          response = await _dio.put(endPoint, data: finalData);
+          break;
+        case 'DELETE':
+          response = await _dio.delete(endPoint, data: finalData);
+          break;
+        default:
+          throw ArgumentError('Invalid HTTP method: $method');
+      }
+
       return ApiResponse.fromResponse(response);
+    } on DioException catch (e) {
+      return ApiResponse.fromError(e);
     } catch (error) {
       return ApiResponse.fromError(error);
     }
+  }
+
+  Future<ApiResponse> get(String endPoint, {Map<String, dynamic>? queryParameters}) {
+    return request(method: 'GET', endPoint: endPoint, queryParameters: queryParameters);
+  }
+
+  Future<ApiResponse> post(String endPoint, {required Map<String, dynamic> data, bool isFormData = false}) {
+    return request(method: 'POST', endPoint: endPoint, data: data, isFormData: isFormData);
+  }
+
+  Future<ApiResponse> put(String endPoint, {required Map<String, dynamic> data, bool isFormData = false}) {
+    return request(method: 'PUT', endPoint: endPoint, data: data, isFormData: isFormData);
+  }
+
+  Future<ApiResponse> delete(String endPoint, {Map<String, dynamic>? data}) {
+    return request(method: 'DELETE', endPoint: endPoint, data: data);
   }
 }

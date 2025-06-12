@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:introduction_screen/introduction_screen.dart';
-import 'package:ntigradproject/core/utils/app_icons.dart';
-import 'package:ntigradproject/features/start/view/start_view.dart';
+import 'package:ntigradproject/core/utils/app_icons.dart'; // تأكد من هذا المسار
+import 'package:ntigradproject/features/start/view/start_view.dart'; // تأكد من هذا المسار
 
 class OnBoardingPage extends StatefulWidget {
   const OnBoardingPage({super.key});
@@ -16,26 +16,35 @@ class OnBoardingPageState extends State<OnBoardingPage> {
   final introKey = GlobalKey<IntroductionScreenState>();
 
   void _onIntroEnd(context) {
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const GetStartView()));
+    // الانتقال إلى GetStartView بعد الانتهاء من الـ Onboarding
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const GetStartView()),
+    );
   }
 
-  Widget _buildImage(String assetName, [double width = 350]) {
-    return SvgPicture.asset(assetName, width: width);
+  // دالة مساعدة لبناء الصور مع ضبط حجم متجاوب
+  Widget _buildImage(String assetName, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // ضبط عرض الصورة ليكون نسبة من عرض الشاشة (مثلاً 80% من عرض الشاشة)
+    return SvgPicture.asset(assetName, width: screenWidth * 0.8);
   }
 
   @override
   Widget build(BuildContext context) {
-    const bodyStyle = TextStyle(fontSize: 19.0);
+    // ضبط حجم الخط الأساسي ليتناسب مع عرض الشاشة
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height; // ✅ تم تعريف screenHeight هنا
+    final bodyStyle = TextStyle(fontSize: screenWidth * 0.045); // حجم خط متجاوب
+    final titleStyle = TextStyle(fontSize: screenWidth * 0.07, fontWeight: FontWeight.w700); // حجم خط متجاوب
 
     var pageDecoration = PageDecoration(
-      titleTextStyle: TextStyle(fontSize: 28.0, fontWeight: FontWeight.w700),
+      titleTextStyle: titleStyle,
       bodyTextStyle: bodyStyle,
-      bodyPadding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+      // padding متجاوب
+      bodyPadding: EdgeInsets.fromLTRB(screenWidth * 0.04, 0.0, screenWidth * 0.04, screenHeight * 0.02),
       pageColor: Colors.white,
       imagePadding: EdgeInsets.only(
-        top: MediaQuery.of(context).size.height * 0.125,
+        top: MediaQuery.of(context).size.height * 0.125, // padding رأسي ثابت نسبياً
       ),
     );
 
@@ -49,12 +58,19 @@ class OnBoardingPageState extends State<OnBoardingPage> {
         alignment: Alignment.topRight,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.only(top: 16, right: 16),
+            padding: EdgeInsets.only(top: screenHeight * 0.02, right: screenWidth * 0.04), // padding متجاوب
             child: TextButton(
               onPressed: () {
                 _onIntroEnd(context);
               },
-              child: Text('Skip'),
+              child: Text(
+                'Skip',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04, // حجم خط متجاوب
+                  color: Theme.of(context).primaryColor, // استخدام لون الـ primaryTheme
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ),
@@ -62,56 +78,60 @@ class OnBoardingPageState extends State<OnBoardingPage> {
       pages: [
         PageViewModel(
           title: "Choose Products",
-          body:
-          "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
-          image: _buildImage(MyAppIcons.start),
+          body: "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
+          image: _buildImage(MyAppIcons.start, context), // تمرير الـ context
           decoration: pageDecoration,
         ),
         PageViewModel(
           title: "Make Payment",
-          body:
-          "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
-          image: _buildImage(MyAppIcons.salesconsulting),
+          body: "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
+          image: _buildImage(MyAppIcons.salesconsulting, context), // تمرير الـ context
           decoration: pageDecoration,
         ),
         PageViewModel(
           title: "Get Your Order",
-          body:
-          "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
-          image: _buildImage(MyAppIcons.shoppingbag),
+          body: "Amet minim mollit non deserunt ullamco est \n sit aliqua dolor do amet sint. Velit officia \n consequat duis enim velit mollit.",
+          image: _buildImage(MyAppIcons.shoppingbag, context), // تمرير الـ context
           decoration: pageDecoration,
         ),
       ],
       onDone: () => _onIntroEnd(context),
-      onSkip: () {}, // You can override onSkip callback
-      showSkipButton: false,
+      onSkip: () => _onIntroEnd(context), // يمكن جعل Skip يعمل مثل Done أو الانتقال إلى صفحة معينة
+      showSkipButton: true, // تأكد من إظهار زر Skip
       skipOrBackFlex: 0,
       nextFlex: 0,
       showBackButton: true,
 
-      //rtl: true, // Display as right-to-left
-      back: const Text('Prev', style: TextStyle(fontWeight: FontWeight.w600)),
-      //skip:
-      next: const Text('Next', style: TextStyle(fontWeight: FontWeight.w600)),
-      done: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
+      back: Text(
+        'Prev',
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: screenWidth * 0.04), // حجم خط متجاوب
+      ),
+      next: Text(
+        'Next',
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: screenWidth * 0.04), // حجم خط متجاوب
+      ),
+      done: Text(
+        'Done',
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: screenWidth * 0.04), // حجم خط متجاوب
+      ),
       curve: Curves.fastLinearToSlowEaseIn,
-      controlsMargin: const EdgeInsets.all(16),
-      controlsPadding:
-      kIsWeb
+      controlsMargin: EdgeInsets.all(screenWidth * 0.04), // margin متجاوب
+      controlsPadding: kIsWeb
           ? const EdgeInsets.all(12.0)
-          : const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-      dotsDecorator: const DotsDecorator(
-        size: Size(10.0, 10.0),
-        color: Color(0xFFBDBDBD),
-        activeSize: Size(40.0, 8.0),
+          : EdgeInsets.fromLTRB(screenWidth * 0.02, screenHeight * 0.005, screenWidth * 0.02, screenHeight * 0.005), // padding متجاوب
+      dotsDecorator: DotsDecorator(
+        size: Size(screenWidth * 0.025, screenWidth * 0.025), // حجم النقط متجاوب
+        color: const Color(0xFFBDBDBD),
+        activeSize: Size(screenWidth * 0.1, screenWidth * 0.02), // حجم النقطة النشطة متجاوب
         activeShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(25.0)),
+          borderRadius: BorderRadius.all(Radius.circular(screenWidth * 0.06)), // حواف دائرية متجاوبة
         ),
       ),
     );
   }
 }
 
+// كلاس HomePage لم يتم تعديله في هذه المراجعة
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
